@@ -42,26 +42,32 @@ def S(b,s,d,a,e):
     if N>L or N&511==0 and time.monotonic()-t0>6:raise X
     if s<-9000:return s-max(d,0)
     if b in Q:return 0
-    r=s if d<1 else-30000
+    r=s+30*((b.count('B')>1)-(b.count('b')>1))if d<1 else-30000
     if r>=e:return r
     a=max(a,r)
-    for v,i,j in sorted(G(b),reverse=1):
+    k=K.setdefault(d,[]);h=H.get(b)
+    for v,i,j in sorted(G(b),key=lambda m:-m[0]-400*((m[1],m[2])in k)-9999*((m[1],m[2])==h)):
         if d<1 and b[j]=='.'and v<300:continue
         t=-S(M(b,i,j),-(s+v),d-1,-e,-a)
         if t>r:
             r=t
+            if d>0:
+                if len(H)>9**5:H.clear()
+                H[b]=(i,j)
             if r>a:
                 a=r
-                if r>=e:break
+                if r>=e:
+                    if b[j]=='.'and(i,j)not in k:k[:]=[(i,j)]+k[:1]
+                    break
     return r
 def sq(i):return"abcdefgh"[i%10-1]+str(10-i//10)
 def ix(u,w):
     i=(10-int(u[1]))*10+"abcdefgh".index(u[0])+1
     return i if w else 119-i
-Q=set();gn=0
+Q=set();gn=0;K={};H={}
 def best(fen,legal,g):
     global N,t0,L,Q,gn
-    N=0;L=150000;t0=time.monotonic()
+    K.clear();N=0;L=150000;t0=time.monotonic()
     if g!=gn:Q=set();gn=g
     f=fen.split();w=f[1]=='w'
     b=' '*20
